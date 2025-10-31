@@ -13,7 +13,7 @@ function fetch(url) {
 async function getGoalieData() {
     try {
         // Call our own scraper endpoint
-        const data = await fetch('https://YOUR-SITE.vercel.app/api/scrape-goalies');
+        const data = await fetch('https://nhl-one.vercel.app/api/scrape-goalies');
         const json = JSON.parse(data);
         return json.goalies || [];
     } catch (error) {
@@ -128,3 +128,4 @@ module.exports = async (req, res) => {
         });
     }
 };
+
