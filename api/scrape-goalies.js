@@ -134,4 +134,4 @@ module.exports = async (req, res) => {
             goalies: []
         });
     }
-};scrape-goalies.js
+};
