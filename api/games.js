@@ -1,147 +1,222 @@
-const https = require('https');
+const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer-core');
 
-function fetch(url) {
-    return new Promise((resolve, reject) => {
-        https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => resolve(data));
-        }).on('error', reject);
-    });
-}
+let cachedGames = null;
+let cacheTimestamp = null;
+const CACHE_DURATION = 3 * 60 * 1000; // 3 minutes
 
-function parseTime(timeStr) {
-    // Convert times like "7:00 PM ET" to display format
-    return timeStr.replace(' ET', '').trim();
-}
+// NHL team abbreviations to full names mapping
+const TEAM_NAMES = {
+    'ANA': 'Anaheim Ducks', 'ARI': 'Arizona Coyotes', 'BOS': 'Boston Bruins',
+    'BUF': 'Buffalo Sabres', 'CAR': 'Carolina Hurricanes', 'CBJ': 'Columbus Blue Jackets',
+    'CGY': 'Calgary Flames', 'CHI': 'Chicago Blackhawks', 'COL': 'Colorado Avalanche',
+    'DAL': 'Dallas Stars', 'DET': 'Detroit Red Wings', 'EDM': 'Edmonton Oilers',
+    'FLA': 'Florida Panthers', 'LA': 'Los Angeles Kings', 'LAK': 'Los Angeles Kings',
+    'MIN': 'Minnesota Wild', 'MTL': 'Montreal Canadiens', 'NJ': 'New Jersey Devils',
+    'NJD': 'New Jersey Devils', 'NSH': 'Nashville Predators', 'NYI': 'New York Islanders',
+    'NYR': 'New York Rangers', 'OTT': 'Ottawa Senators', 'PHI': 'Philadelphia Flyers',
+    'PIT': 'Pittsburgh Penguins', 'SJ': 'San Jose Sharks', 'SJS': 'San Jose Sharks',
+    'SEA': 'Seattle Kraken', 'STL': 'St. Louis Blues', 'TB': 'Tampa Bay Lightning',
+    'TBL': 'Tampa Bay Lightning', 'TOR': 'Toronto Maple Leafs', 'VAN': 'Vancouver Canucks',
+    'VGK': 'Vegas Golden Knights', 'WPG': 'Winnipeg Jets', 'WSH': 'Washington Capitals'
+};
 
 async function scrapeDailyFaceoff() {
+    // Return cached data if fresh
+    if (cachedGames && cacheTimestamp && (Date.now() - cacheTimestamp < CACHE_DURATION)) {
+        console.log('Returning cached game data');
+        return cachedGames;
+    }
+    
+    let browser = null;
+    
     try {
-        const html = await fetch('https://www.dailyfaceoff.com/starting-goalies/');
-        const text = html.toString();
+        console.log('Launching browser...');
         
-        const games = [];
+        browser = await puppeteer.launch({
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+        });
         
-        // Find all game cards - they're in a structured format
-        // Look for patterns like "Team @ Team" and extract everything
+        const page = await browser.newPage();
         
-        // Split by major sections
-        const lines = text.split('\n');
+        console.log('Navigating to DailyFaceoff...');
+        await page.goto('https://www.dailyfaceoff.com/starting-goalies/', {
+            waitUntil: 'networkidle2',
+            timeout: 30000
+        });
         
-        let currentGame = null;
-        let currentTeam = 'away'; // Start with away team
+        console.log('Waiting for content to load...');
+        await page.waitForTimeout(3000);
         
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
+        console.log('Extracting game data...');
+        const games = await page.evaluate((teamNames) => {
+            const gameData = [];
             
-            // Look for game matchup (e.g., "Buffalo @ Boston")
-            const matchupMatch = line.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*@\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
+            // Find all game matchup containers
+            const gameCards = document.querySelectorAll('.starting-goalies-card');
             
-            if (matchupMatch) {
-                // Save previous game if exists
-                if (currentGame && currentGame.away_team && currentGame.home_team) {
-                    games.push(currentGame);
+            gameCards.forEach(card => {
+                try {
+                    // Get team names from matchup
+                    const matchupEl = card.querySelector('.game-matchup');
+                    if (!matchupEl) return;
+                    
+                    const matchupText = matchupEl.textContent.trim();
+                    const matchupMatch = matchupText.match(/([A-Z]{2,3})\s*@\s*([A-Z]{2,3})/);
+                    
+                    if (!matchupMatch) return;
+                    
+                    const awayAbbr = matchupMatch[1];
+                    const homeAbbr = matchupMatch[2];
+                    
+                    // Get game time
+                    const timeEl = card.querySelector('.game-time');
+                    const gameTime = timeEl ? timeEl.textContent.trim().replace(' ET', '') : 'TBD';
+                    
+                    // Get team logos
+                    const teamLogos = card.querySelectorAll('.team-logo img');
+                    const awayLogo = teamLogos[0] ? teamLogos[0].src : null;
+                    const homeLogo = teamLogos[1] ? teamLogos[1].src : null;
+                    
+                    // Get goalie info
+                    const goalieCards = card.querySelectorAll('.goalie-card');
+                    
+                    let awayGoalie = { 
+                        name: 'TBD', 
+                        gaa: '-', 
+                        sv_pct: '-', 
+                        wins: 0, 
+                        losses: 0, 
+                        otl: 0, 
+                        confirmed: false,
+                        photo: null 
+                    };
+                    
+                    let homeGoalie = { 
+                        name: 'TBD', 
+                        gaa: '-', 
+                        sv_pct: '-', 
+                        wins: 0, 
+                        losses: 0, 
+                        otl: 0, 
+                        confirmed: false,
+                        photo: null 
+                    };
+                    
+                    if (goalieCards.length >= 2) {
+                        // Away goalie (first card)
+                        const awayCard = goalieCards[0];
+                        const awayNameEl = awayCard.querySelector('.goalie-name, .player-name');
+                        if (awayNameEl) awayGoalie.name = awayNameEl.textContent.trim();
+                        
+                        const awayPhotoEl = awayCard.querySelector('img.goalie-image, img.player-image');
+                        if (awayPhotoEl) awayGoalie.photo = awayPhotoEl.src;
+                        
+                        const awayConfirmed = awayCard.querySelector('.confirmed, .status-confirmed');
+                        awayGoalie.confirmed = !!awayConfirmed;
+                        
+                        // Get stats
+                        const awayStats = awayCard.querySelectorAll('.stat-value');
+                        const awayStatLabels = awayCard.querySelectorAll('.stat-label');
+                        
+                        awayStats.forEach((stat, idx) => {
+                            const label = awayStatLabels[idx]?.textContent.toLowerCase();
+                            const value = stat.textContent.trim();
+                            
+                            if (label?.includes('gaa')) awayGoalie.gaa = value;
+                            if (label?.includes('sv%')) awayGoalie.sv_pct = value;
+                        });
+                        
+                        // Get record
+                        const awayRecordEl = awayCard.querySelector('.goalie-record, .player-record');
+                        if (awayRecordEl) {
+                            const recordMatch = awayRecordEl.textContent.match(/(\d+)-(\d+)-(\d+)/);
+                            if (recordMatch) {
+                                awayGoalie.wins = parseInt(recordMatch[1]);
+                                awayGoalie.losses = parseInt(recordMatch[2]);
+                                awayGoalie.otl = parseInt(recordMatch[3]);
+                            }
+                        }
+                        
+                        // Home goalie (second card)
+                        const homeCard = goalieCards[1];
+                        const homeNameEl = homeCard.querySelector('.goalie-name, .player-name');
+                        if (homeNameEl) homeGoalie.name = homeNameEl.textContent.trim();
+                        
+                        const homePhotoEl = homeCard.querySelector('img.goalie-image, img.player-image');
+                        if (homePhotoEl) homeGoalie.photo = homePhotoEl.src;
+                        
+                        const homeConfirmed = homeCard.querySelector('.confirmed, .status-confirmed');
+                        homeGoalie.confirmed = !!homeConfirmed;
+                        
+                        const homeStats = homeCard.querySelectorAll('.stat-value');
+                        const homeStatLabels = homeCard.querySelectorAll('.stat-label');
+                        
+                        homeStats.forEach((stat, idx) => {
+                            const label = homeStatLabels[idx]?.textContent.toLowerCase();
+                            const value = stat.textContent.trim();
+                            
+                            if (label?.includes('gaa')) homeGoalie.gaa = value;
+                            if (label?.includes('sv%')) homeGoalie.sv_pct = value;
+                        });
+                        
+                        const homeRecordEl = homeCard.querySelector('.goalie-record, .player-record');
+                        if (homeRecordEl) {
+                            const recordMatch = homeRecordEl.textContent.match(/(\d+)-(\d+)-(\d+)/);
+                            if (recordMatch) {
+                                homeGoalie.wins = parseInt(recordMatch[1]);
+                                homeGoalie.losses = parseInt(recordMatch[2]);
+                                homeGoalie.otl = parseInt(recordMatch[3]);
+                            }
+                        }
+                    }
+                    
+                    gameData.push({
+                        away_team: teamNames[awayAbbr] || awayAbbr,
+                        home_team: teamNames[homeAbbr] || homeAbbr,
+                        away_abbr: awayAbbr,
+                        home_abbr: homeAbbr,
+                        game_time: gameTime,
+                        status: 'scheduled',
+                        score: null,
+                        home_win_prob: "50.0",
+                        away_win_prob: "50.0",
+                        team_logos: {
+                            away: awayLogo,
+                            home: homeLogo
+                        },
+                        goalies: {
+                            away: awayGoalie,
+                            home: homeGoalie
+                        }
+                    });
+                    
+                } catch (err) {
+                    console.error('Error parsing game card:', err);
                 }
-                
-                // Start new game
-                currentGame = {
-                    away_team: matchupMatch[1].trim(),
-                    home_team: matchupMatch[2].trim(),
-                    game_time: null,
-                    status: 'scheduled',
-                    score: null,
-                    home_win_prob: "50.0",
-                    away_win_prob: "50.0",
-                    goalies: {
-                        away: { name: "TBD", gaa: "-", sv_pct: "-", wins: 0, losses: 0, otl: 0, confirmed: false, photo: null },
-                        home: { name: "TBD", gaa: "-", sv_pct: "-", wins: 0, losses: 0, otl: 0, confirmed: false, photo: null }
-                    },
-                    edge: null
-                };
-                currentTeam = 'away';
-                continue;
-            }
+            });
             
-            if (!currentGame) continue;
-            
-            // Look for time (e.g., "7:00 PM ET")
-            const timeMatch = line.match(/(\d{1,2}:\d{2}\s*(?:AM|PM)\s*ET)/i);
-            if (timeMatch && !currentGame.game_time) {
-                currentGame.game_time = parseTime(timeMatch[1]);
-            }
-            
-            // Look for goalie names - usually in bold or heading tags
-            const nameMatch = line.match(/>([A-Z][a-z]+\s+[A-Z][a-z]+)</);
-            if (nameMatch) {
-                const name = nameMatch[1];
-                // If we have a name and no goalie set yet for current team
-                if (currentTeam === 'away' && currentGame.goalies.away.name === "TBD") {
-                    currentGame.goalies.away.name = name;
-                } else if (currentTeam === 'home' && currentGame.goalies.home.name === "TBD") {
-                    currentGame.goalies.home.name = name;
-                    currentTeam = 'away'; // Reset for next game
-                } else if (currentGame.goalies.away.name !== "TBD" && currentTeam === 'away') {
-                    currentTeam = 'home'; // Switch to home team
-                }
-            }
-            
-            // Look for "CONFIRMED" status
-            if (line.includes('CONFIRMED') || line.includes('Confirmed')) {
-                if (currentTeam === 'away' || currentGame.goalies.home.name === "TBD") {
-                    currentGame.goalies.away.confirmed = true;
-                } else {
-                    currentGame.goalies.home.confirmed = true;
-                }
-            }
-            
-            // Look for GAA
-            const gaaMatch = line.match(/(\d+\.\d+)\s*GAA/i);
-            if (gaaMatch) {
-                const gaa = gaaMatch[1];
-                if (currentTeam === 'away' && currentGame.goalies.away.gaa === "-") {
-                    currentGame.goalies.away.gaa = gaa;
-                } else if (currentGame.goalies.home.gaa === "-") {
-                    currentGame.goalies.home.gaa = gaa;
-                }
-            }
-            
-            // Look for SV%
-            const svMatch = line.match(/(\d+\.\d+)\s*SV%/i);
-            if (svMatch) {
-                const sv = '.' + svMatch[1].replace('.', '');
-                if (currentTeam === 'away' && currentGame.goalies.away.sv_pct === "-") {
-                    currentGame.goalies.away.sv_pct = sv;
-                } else if (currentGame.goalies.home.sv_pct === "-") {
-                    currentGame.goalies.home.sv_pct = sv;
-                }
-            }
-            
-            // Look for record (W-L-OTL)
-            const recordMatch = line.match(/(\d+)-(\d+)-(\d+)/);
-            if (recordMatch) {
-                const [_, w, l, otl] = recordMatch;
-                if (currentTeam === 'away' && currentGame.goalies.away.wins === 0) {
-                    currentGame.goalies.away.wins = parseInt(w);
-                    currentGame.goalies.away.losses = parseInt(l);
-                    currentGame.goalies.away.otl = parseInt(otl);
-                } else if (currentGame.goalies.home.wins === 0) {
-                    currentGame.goalies.home.wins = parseInt(w);
-                    currentGame.goalies.home.losses = parseInt(l);
-                    currentGame.goalies.home.otl = parseInt(otl);
-                }
-            }
-        }
+            return gameData;
+        }, TEAM_NAMES);
         
-        // Add last game
-        if (currentGame && currentGame.away_team && currentGame.home_team) {
-            games.push(currentGame);
-        }
+        console.log(`Found ${games.length} games`);
+        
+        // Cache the results
+        cachedGames = games;
+        cacheTimestamp = Date.now();
         
         return games;
         
     } catch (error) {
-        console.error('DailyFaceoff scraping error:', error);
-        return [];
+        console.error('Scraping error:', error);
+        return cachedGames || [];
+    } finally {
+        if (browser) {
+            await browser.close();
+        }
     }
 }
 
@@ -152,24 +227,31 @@ module.exports = async (req, res) => {
     try {
         const games = await scrapeDailyFaceoff();
         
-        // Add some edge calculations
+        // Add edge calculations based on goalie stats
         const enrichedGames = games.map(game => {
-            // Simple edge calculation based on goalie stats
             let edge = null;
             
             if (game.goalies.home.gaa !== "-" && game.goalies.away.gaa !== "-") {
                 const homeGAA = parseFloat(game.goalies.home.gaa);
                 const awayGAA = parseFloat(game.goalies.away.gaa);
+                const homeSV = parseFloat(game.goalies.home.sv_pct);
+                const awaySV = parseFloat(game.goalies.away.sv_pct);
                 
-                const gaaDiff = awayGAA - homeGAA;
-                
-                if (Math.abs(gaaDiff) > 0.5) {
-                    const betterTeam = gaaDiff > 0 ? game.home_team : game.away_team;
-                    edge = {
-                        recommendation: `BET ${betterTeam}`,
-                        confidence: Math.abs(gaaDiff) > 1.0 ? "HIGH" : "MEDIUM",
-                        value: Math.abs(gaaDiff * 10).toFixed(1)
-                    };
+                if (!isNaN(homeGAA) && !isNaN(awayGAA)) {
+                    const gaaDiff = awayGAA - homeGAA;
+                    const svDiff = homeSV - awaySV;
+                    
+                    // Combined edge score
+                    const edgeScore = (gaaDiff * 10) + (svDiff * 100);
+                    
+                    if (Math.abs(edgeScore) > 0.5) {
+                        const betterTeam = edgeScore > 0 ? game.home_team : game.away_team;
+                        edge = {
+                            recommendation: `BET ${betterTeam}`,
+                            confidence: Math.abs(edgeScore) > 1.0 ? "HIGH" : "MEDIUM",
+                            value: Math.abs(edgeScore).toFixed(1)
+                        };
+                    }
                 }
             }
             
@@ -183,10 +265,10 @@ module.exports = async (req, res) => {
         res.status(200).json({
             success: true,
             games: enrichedGames,
+            cached: cacheTimestamp ? true : false,
             timestamp: new Date().toISOString(),
             sources: {
-                dailyfaceoff: true,
-                polymarket: false
+                dailyfaceoff: true
             }
         });
         
