@@ -12,52 +12,20 @@ function fetch(url) {
 
 async function getGoalieData() {
     try {
-        const html = await fetch('https://goaliepost.com');
-        
-        // Parse goalie data from HTML
-        const goalieMap = new Map();
-        
-        // Simple regex patterns - adjust based on actual HTML structure
-        const gameBlockRegex = /<div[^>]*class="[^"]*game[^"]*"[^>]*>([\s\S]*?)<\/div>/gi;
-        
-        let match;
-        while ((match = gameBlockRegex.exec(html)) !== null) {
-            const block = match[1];
-            
-            // Extract goalie name
-            const nameMatch = /<div[^>]*class="[^"]*goalie-name[^"]*"[^>]*>([^<]+)<\/div>/i.exec(block);
-            if (!nameMatch) continue;
-            
-            const name = nameMatch[1].trim().toUpperCase();
-            
-            // Extract stats
-            const gaaMatch = /GAA[^>]*>([0-9.]+)</i.exec(block);
-            const svMatch = /SV%[^>]*>([0-9.]+)</i.exec(block);
-            const recordMatch = /([0-9]+)-([0-9]+)-([0-9]+)/i.exec(block);
-            const photoMatch = /<img[^>]*src="([^"]+)"[^>]*>/i.exec(block);
-            
-            goalieMap.set(name, {
-                name: nameMatch[1].trim(),
-                gaa: gaaMatch ? gaaMatch[1] : 'N/A',
-                sv_pct: svMatch ? svMatch[1] : 'N/A',
-                wins: recordMatch ? parseInt(recordMatch[1]) : 0,
-                losses: recordMatch ? parseInt(recordMatch[2]) : 0,
-                otl: recordMatch ? parseInt(recordMatch[3]) : 0,
-                photo: photoMatch ? photoMatch[1] : null
-            });
-        }
-        
-        return goalieMap;
+        // Call our own scraper endpoint
+        const data = await fetch('https://YOUR-SITE.vercel.app/api/scrape-goalies');
+        const json = JSON.parse(data);
+        return json.goalies || [];
     } catch (error) {
         console.error('Error fetching goalie data:', error);
-        return new Map();
+        return [];
     }
 }
 
-function matchGoalie(goalieMap, teamAbbr) {
-    // Try to find goalie by team abbreviation or partial name match
-    for (const [key, goalie] of goalieMap.entries()) {
-        if (key.includes(teamAbbr) || goalie.name.includes(teamAbbr)) {
+function matchGoalie(goalies, teamAbbr, teamName) {
+    // Try to match by team abbreviation or name
+    for (const goalie of goalies) {
+        if (goalie.raw_text?.includes(teamAbbr) || goalie.raw_text?.includes(teamName)) {
             return goalie;
         }
     }
@@ -71,8 +39,8 @@ module.exports = async (req, res) => {
     try {
         const today = new Date().toISOString().split('T')[0];
         
-        // Fetch NHL games and goalie data in parallel
-        const [nhlData, goalieMap] = await Promise.all([
+        // Fetch both NHL schedule and goalie data in parallel
+        const [nhlData, goalies] = await Promise.all([
             fetch(`https://api-web.nhle.com/v1/schedule/${today}`),
             getGoalieData()
         ]);
@@ -88,24 +56,24 @@ module.exports = async (req, res) => {
                         const awayTeam = game.awayTeam.placeName.default + ' ' + game.awayTeam.commonName.default;
                         
                         // Match goalies from scraped data
-                        const homeGoalie = matchGoalie(goalieMap, game.homeTeam.abbrev) || {
+                        const homeGoalie = matchGoalie(goalies, game.homeTeam.abbrev, homeTeam) || {
                             name: "TBD",
+                            confirmed: false,
                             gaa: "-",
                             sv_pct: "-",
                             wins: 0,
                             losses: 0,
-                            otl: 0,
-                            photo: null
+                            otl: 0
                         };
                         
-                        const awayGoalie = matchGoalie(goalieMap, game.awayTeam.abbrev) || {
+                        const awayGoalie = matchGoalie(goalies, game.awayTeam.abbrev, awayTeam) || {
                             name: "TBD",
+                            confirmed: false,
                             gaa: "-",
                             sv_pct: "-",
                             wins: 0,
                             losses: 0,
-                            otl: 0,
-                            photo: null
+                            otl: 0
                         };
                         
                         games.push({
@@ -146,7 +114,7 @@ module.exports = async (req, res) => {
             timestamp: new Date().toISOString(),
             sources: {
                 nhl_api: true,
-                goaliepost: goalieMap.size > 0,
+                goaliepost_scraper: goalies.length > 0,
                 polymarket: false
             }
         });
