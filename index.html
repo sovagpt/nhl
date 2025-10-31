@@ -124,12 +124,26 @@
         .team {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 12px 0;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .team:last-child {
             border-bottom: none;
+        }
+
+        .team-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .team-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 8px;
         }
 
         .team-name {
@@ -148,16 +162,43 @@
             gap: 20px;
             padding-top: 16px;
             border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 16px;
         }
 
         .goalie {
             flex: 1;
         }
 
+        .goalie-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .goalie-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #00d4ff;
+        }
+
         .goalie-name {
             font-weight: 700;
-            margin-bottom: 8px;
             color: #00d4ff;
+            flex: 1;
+        }
+
+        .confirmed-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: 600;
+            margin-left: 6px;
         }
 
         .goalie-stats {
@@ -236,15 +277,12 @@
         .dot-green { background: #27c93f; }
 
         .terminal-title {
-            flex: 1;
-            text-align: center;
             color: #8b949e;
             font-size: 0.9em;
         }
 
         .terminal-line {
-            margin: 8px 0;
-            color: #58a6ff;
+            line-height: 1.6;
             font-size: 0.95em;
         }
 
@@ -289,6 +327,9 @@
             }
             h1 {
                 font-size: 2em;
+            }
+            .goalie-info {
+                flex-direction: column;
             }
         }
     </style>
@@ -361,11 +402,17 @@
                     
                     <div class="teams">
                         <div class="team">
-                            <span class="team-name">${game.away_team}</span>
+                            <div class="team-header">
+                                ${game.team_logos?.away ? `<img src="${game.team_logos.away}" class="team-logo" alt="${game.away_team} logo">` : ''}
+                                <span class="team-name">${game.away_team}</span>
+                            </div>
                             <span class="team-prob">${game.away_win_prob || '-'}%</span>
                         </div>
                         <div class="team">
-                            <span class="team-name">${game.home_team}</span>
+                            <div class="team-header">
+                                ${game.team_logos?.home ? `<img src="${game.team_logos.home}" class="team-logo" alt="${game.home_team} logo">` : ''}
+                                <span class="team-name">${game.home_team}</span>
+                            </div>
                             <span class="team-prob">${game.home_win_prob || '-'}%</span>
                         </div>
                     </div>
@@ -373,8 +420,18 @@
                     ${game.goalies ? `
                         <div class="goalie-info">
                             <div class="goalie">
-                                <div class="goalie-name">🥅 ${game.goalies.away?.name || 'TBD'}</div>
-                                ${game.goalies.away ? `
+                                <div class="goalie-header">
+                                    ${game.goalies.away?.photo ? 
+                                        `<img src="${game.goalies.away.photo}" class="goalie-photo" alt="${game.goalies.away.name}">` : 
+                                        `<div class="goalie-photo" style="background: linear-gradient(135deg, #00d4ff 0%, #7a5cff 100%);"></div>`}
+                                    <div>
+                                        <div class="goalie-name">
+                                            🥅 ${game.goalies.away?.name || 'TBD'}
+                                            ${game.goalies.away?.confirmed ? '<span class="confirmed-badge">✓ CONFIRMED</span>' : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                ${game.goalies.away && game.goalies.away.name !== 'TBD' ? `
                                     <div class="goalie-stats">
                                         <div class="stat-item">
                                             <span class="stat-item-label">GAA</span>
@@ -386,14 +443,24 @@
                                         </div>
                                         <div class="stat-item">
                                             <span class="stat-item-label">Record</span>
-                                            <span class="stat-item-value">${game.goalies.away.wins || 0}-${game.goalies.away.losses || 0}</span>
+                                            <span class="stat-item-value">${game.goalies.away.wins || 0}-${game.goalies.away.losses || 0}-${game.goalies.away.otl || 0}</span>
                                         </div>
                                     </div>
                                 ` : ''}
                             </div>
                             <div class="goalie">
-                                <div class="goalie-name">🥅 ${game.goalies.home?.name || 'TBD'}</div>
-                                ${game.goalies.home ? `
+                                <div class="goalie-header">
+                                    ${game.goalies.home?.photo ? 
+                                        `<img src="${game.goalies.home.photo}" class="goalie-photo" alt="${game.goalies.home.name}">` : 
+                                        `<div class="goalie-photo" style="background: linear-gradient(135deg, #7a5cff 0%, #00d4ff 100%);"></div>`}
+                                    <div>
+                                        <div class="goalie-name">
+                                            🥅 ${game.goalies.home?.name || 'TBD'}
+                                            ${game.goalies.home?.confirmed ? '<span class="confirmed-badge">✓ CONFIRMED</span>' : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                ${game.goalies.home && game.goalies.home.name !== 'TBD' ? `
                                     <div class="goalie-stats">
                                         <div class="stat-item">
                                             <span class="stat-item-label">GAA</span>
@@ -405,7 +472,7 @@
                                         </div>
                                         <div class="stat-item">
                                             <span class="stat-item-label">Record</span>
-                                            <span class="stat-item-value">${game.goalies.home.wins || 0}-${game.goalies.home.losses || 0}</span>
+                                            <span class="stat-item-value">${game.goalies.home.wins || 0}-${game.goalies.home.losses || 0}-${game.goalies.home.otl || 0}</span>
                                         </div>
                                     </div>
                                 ` : ''}
@@ -474,5 +541,4 @@
         setInterval(loadGames, 60000); // Refresh every minute
     </script>
 </body>
-
 </html>
