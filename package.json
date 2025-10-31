@@ -1,0 +1,19 @@
+{
+  "name": "puck-prophet",
+  "version": "1.0.0",
+  "description": "AI-Powered NHL Betting Intelligence for Polymarket",
+  "main": "api/games.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "nhl",
+    "betting",
+    "polymarket",
+    "ai",
+    "sports"
+  ],
+  "author": "@duragification",
+  "license": "MIT"
+}
