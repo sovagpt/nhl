@@ -10,62 +10,139 @@ function fetch(url) {
     });
 }
 
-async function getDailyFaceoffStarters() {
+function parseTime(timeStr) {
+    // Convert times like "7:00 PM ET" to display format
+    return timeStr.replace(' ET', '').trim();
+}
+
+async function scrapeDailyFaceoff() {
     try {
-        // DailyFaceoff has a public endpoint for starting goalies
-        const data = await fetch('https://www.dailyfaceoff.com/starting-goalies/');
-        const html = data.toString();
+        const html = await fetch('https://www.dailyfaceoff.com/starting-goalies/');
+        const text = html.toString();
         
-        const goalies = [];
+        const games = [];
         
-        // Parse their HTML - they have a clean structure
-        const gameRegex = /<div class="starting-goalies-card">([\s\S]*?)<\/div>/gi;
-        let match;
+        // Find all game cards - they're in a structured format
+        // Look for patterns like "Team @ Team" and extract everything
         
-        while ((match = gameRegex.exec(html)) !== null) {
-            const card = match[1];
+        // Split by major sections
+        const lines = text.split('\n');
+        
+        let currentGame = null;
+        let currentTeam = 'away'; // Start with away team
+        
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
             
-            // Extract goalie name
-            const nameMatch = /<h3[^>]*>([^<]+)<\/h3>/i.exec(card);
-            // Extract team
-            const teamMatch = /<span[^>]*team[^>]*>([^<]+)<\/span>/i.exec(card);
-            // Extract stats
-            const gaaMatch = /(\d+\.\d+)\s*GAA/i.exec(card);
-            const svMatch = /(\d+\.\d+)\s*SV%/i.exec(card);
-            const recordMatch = /(\d+)-(\d+)-(\d+)/i.exec(card);
+            // Look for game matchup (e.g., "Buffalo @ Boston")
+            const matchupMatch = line.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*@\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
             
-            if (nameMatch && teamMatch) {
-                goalies.push({
-                    name: nameMatch[1].trim(),
-                    team: teamMatch[1].trim(),
-                    gaa: gaaMatch ? gaaMatch[1] : 'N/A',
-                    sv_pct: svMatch ? '.' + svMatch[1] : 'N/A',
-                    wins: recordMatch ? parseInt(recordMatch[1]) : 0,
-                    losses: recordMatch ? parseInt(recordMatch[2]) : 0,
-                    otl: recordMatch ? parseInt(recordMatch[3]) : 0,
-                    confirmed: true
-                });
+            if (matchupMatch) {
+                // Save previous game if exists
+                if (currentGame && currentGame.away_team && currentGame.home_team) {
+                    games.push(currentGame);
+                }
+                
+                // Start new game
+                currentGame = {
+                    away_team: matchupMatch[1].trim(),
+                    home_team: matchupMatch[2].trim(),
+                    game_time: null,
+                    status: 'scheduled',
+                    score: null,
+                    home_win_prob: "50.0",
+                    away_win_prob: "50.0",
+                    goalies: {
+                        away: { name: "TBD", gaa: "-", sv_pct: "-", wins: 0, losses: 0, otl: 0, confirmed: false, photo: null },
+                        home: { name: "TBD", gaa: "-", sv_pct: "-", wins: 0, losses: 0, otl: 0, confirmed: false, photo: null }
+                    },
+                    edge: null
+                };
+                currentTeam = 'away';
+                continue;
+            }
+            
+            if (!currentGame) continue;
+            
+            // Look for time (e.g., "7:00 PM ET")
+            const timeMatch = line.match(/(\d{1,2}:\d{2}\s*(?:AM|PM)\s*ET)/i);
+            if (timeMatch && !currentGame.game_time) {
+                currentGame.game_time = parseTime(timeMatch[1]);
+            }
+            
+            // Look for goalie names - usually in bold or heading tags
+            const nameMatch = line.match(/>([A-Z][a-z]+\s+[A-Z][a-z]+)</);
+            if (nameMatch) {
+                const name = nameMatch[1];
+                // If we have a name and no goalie set yet for current team
+                if (currentTeam === 'away' && currentGame.goalies.away.name === "TBD") {
+                    currentGame.goalies.away.name = name;
+                } else if (currentTeam === 'home' && currentGame.goalies.home.name === "TBD") {
+                    currentGame.goalies.home.name = name;
+                    currentTeam = 'away'; // Reset for next game
+                } else if (currentGame.goalies.away.name !== "TBD" && currentTeam === 'away') {
+                    currentTeam = 'home'; // Switch to home team
+                }
+            }
+            
+            // Look for "CONFIRMED" status
+            if (line.includes('CONFIRMED') || line.includes('Confirmed')) {
+                if (currentTeam === 'away' || currentGame.goalies.home.name === "TBD") {
+                    currentGame.goalies.away.confirmed = true;
+                } else {
+                    currentGame.goalies.home.confirmed = true;
+                }
+            }
+            
+            // Look for GAA
+            const gaaMatch = line.match(/(\d+\.\d+)\s*GAA/i);
+            if (gaaMatch) {
+                const gaa = gaaMatch[1];
+                if (currentTeam === 'away' && currentGame.goalies.away.gaa === "-") {
+                    currentGame.goalies.away.gaa = gaa;
+                } else if (currentGame.goalies.home.gaa === "-") {
+                    currentGame.goalies.home.gaa = gaa;
+                }
+            }
+            
+            // Look for SV%
+            const svMatch = line.match(/(\d+\.\d+)\s*SV%/i);
+            if (svMatch) {
+                const sv = '.' + svMatch[1].replace('.', '');
+                if (currentTeam === 'away' && currentGame.goalies.away.sv_pct === "-") {
+                    currentGame.goalies.away.sv_pct = sv;
+                } else if (currentGame.goalies.home.sv_pct === "-") {
+                    currentGame.goalies.home.sv_pct = sv;
+                }
+            }
+            
+            // Look for record (W-L-OTL)
+            const recordMatch = line.match(/(\d+)-(\d+)-(\d+)/);
+            if (recordMatch) {
+                const [_, w, l, otl] = recordMatch;
+                if (currentTeam === 'away' && currentGame.goalies.away.wins === 0) {
+                    currentGame.goalies.away.wins = parseInt(w);
+                    currentGame.goalies.away.losses = parseInt(l);
+                    currentGame.goalies.away.otl = parseInt(otl);
+                } else if (currentGame.goalies.home.wins === 0) {
+                    currentGame.goalies.home.wins = parseInt(w);
+                    currentGame.goalies.home.losses = parseInt(l);
+                    currentGame.goalies.home.otl = parseInt(otl);
+                }
             }
         }
         
-        return goalies;
+        // Add last game
+        if (currentGame && currentGame.away_team && currentGame.home_team) {
+            games.push(currentGame);
+        }
+        
+        return games;
+        
     } catch (error) {
-        console.error('DailyFaceoff fetch error:', error);
+        console.error('DailyFaceoff scraping error:', error);
         return [];
     }
-}
-
-function matchGoalie(goalies, teamAbbr, teamName) {
-    const teamLower = teamName.toLowerCase();
-    
-    for (const goalie of goalies) {
-        const goalieTeam = goalie.team.toLowerCase();
-        if (goalieTeam.includes(teamLower) || teamLower.includes(goalieTeam)) {
-            return goalie;
-        }
-    }
-    
-    return null;
 }
 
 module.exports = async (req, res) => {
@@ -73,82 +150,42 @@ module.exports = async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     
     try {
-        const today = new Date().toISOString().split('T')[0];
+        const games = await scrapeDailyFaceoff();
         
-        const [nhlData, confirmedStarters] = await Promise.all([
-            fetch(`https://api-web.nhle.com/v1/schedule/${today}`),
-            getDailyFaceoffStarters()
-        ]);
-        
-        const nhlJson = JSON.parse(nhlData);
-        const games = [];
-        
-        if (nhlJson.gameWeek && nhlJson.gameWeek.length > 0) {
-            for (const week of nhlJson.gameWeek) {
-                if (week.games) {
-                    for (const game of week.games) {
-                        const homeTeam = game.homeTeam.placeName.default + ' ' + game.homeTeam.commonName.default;
-                        const awayTeam = game.awayTeam.placeName.default + ' ' + game.awayTeam.commonName.default;
-                        
-                        const homeGoalie = matchGoalie(confirmedStarters, game.homeTeam.abbrev, homeTeam) || {
-                            name: "TBD",
-                            gaa: "-",
-                            sv_pct: "-",
-                            wins: 0,
-                            losses: 0,
-                            otl: 0,
-                            confirmed: false
-                        };
-                        
-                        const awayGoalie = matchGoalie(confirmedStarters, game.awayTeam.abbrev, awayTeam) || {
-                            name: "TBD",
-                            gaa: "-",
-                            sv_pct: "-",
-                            wins: 0,
-                            losses: 0,
-                            otl: 0,
-                            confirmed: false
-                        };
-                        
-                        games.push({
-                            id: game.id,
-                            home_team: homeTeam,
-                            away_team: awayTeam,
-                            home_abbr: game.homeTeam.abbrev,
-                            away_abbr: game.awayTeam.abbrev,
-                            game_time: new Date(game.startTimeUTC).toLocaleTimeString('en-US', { 
-                                hour: 'numeric', 
-                                minute: '2-digit',
-                                timeZone: 'America/New_York'
-                            }),
-                            status: game.gameState === 'LIVE' || game.gameState === 'CRIT' ? 'live' : 'scheduled',
-                            score: game.homeTeam.score && game.awayTeam.score ? 
-                                `${game.awayTeam.score} - ${game.homeTeam.score}` : null,
-                            home_win_prob: "52.5",
-                            away_win_prob: "47.5",
-                            polymarket_odds: null,
-                            edge: Math.random() > 0.5 ? {
-                                recommendation: `BET ${homeTeam}`,
-                                confidence: "MEDIUM",
-                                value: 7.2
-                            } : null,
-                            goalies: {
-                                home: homeGoalie,
-                                away: awayGoalie
-                            }
-                        });
-                    }
+        // Add some edge calculations
+        const enrichedGames = games.map(game => {
+            // Simple edge calculation based on goalie stats
+            let edge = null;
+            
+            if (game.goalies.home.gaa !== "-" && game.goalies.away.gaa !== "-") {
+                const homeGAA = parseFloat(game.goalies.home.gaa);
+                const awayGAA = parseFloat(game.goalies.away.gaa);
+                
+                const gaaDiff = awayGAA - homeGAA;
+                
+                if (Math.abs(gaaDiff) > 0.5) {
+                    const betterTeam = gaaDiff > 0 ? game.home_team : game.away_team;
+                    edge = {
+                        recommendation: `BET ${betterTeam}`,
+                        confidence: Math.abs(gaaDiff) > 1.0 ? "HIGH" : "MEDIUM",
+                        value: Math.abs(gaaDiff * 10).toFixed(1)
+                    };
                 }
             }
-        }
+            
+            return {
+                ...game,
+                id: Math.random().toString(36).substr(2, 9),
+                edge
+            };
+        });
         
         res.status(200).json({
             success: true,
-            games: games,
+            games: enrichedGames,
             timestamp: new Date().toISOString(),
             sources: {
-                nhl_api: true,
-                dailyfaceoff_starters: confirmedStarters.length > 0,
+                dailyfaceoff: true,
                 polymarket: false
             }
         });
