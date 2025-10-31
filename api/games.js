@@ -10,25 +10,61 @@ function fetch(url) {
     });
 }
 
-async function getGoalieData() {
+async function getDailyFaceoffStarters() {
     try {
-        // Call our own scraper endpoint
-        const data = await fetch('https://nhl-one.vercel.app/api/scrape-goalies');
-        const json = JSON.parse(data);
-        return json.goalies || [];
+        // DailyFaceoff has a public endpoint for starting goalies
+        const data = await fetch('https://www.dailyfaceoff.com/starting-goalies/');
+        const html = data.toString();
+        
+        const goalies = [];
+        
+        // Parse their HTML - they have a clean structure
+        const gameRegex = /<div class="starting-goalies-card">([\s\S]*?)<\/div>/gi;
+        let match;
+        
+        while ((match = gameRegex.exec(html)) !== null) {
+            const card = match[1];
+            
+            // Extract goalie name
+            const nameMatch = /<h3[^>]*>([^<]+)<\/h3>/i.exec(card);
+            // Extract team
+            const teamMatch = /<span[^>]*team[^>]*>([^<]+)<\/span>/i.exec(card);
+            // Extract stats
+            const gaaMatch = /(\d+\.\d+)\s*GAA/i.exec(card);
+            const svMatch = /(\d+\.\d+)\s*SV%/i.exec(card);
+            const recordMatch = /(\d+)-(\d+)-(\d+)/i.exec(card);
+            
+            if (nameMatch && teamMatch) {
+                goalies.push({
+                    name: nameMatch[1].trim(),
+                    team: teamMatch[1].trim(),
+                    gaa: gaaMatch ? gaaMatch[1] : 'N/A',
+                    sv_pct: svMatch ? '.' + svMatch[1] : 'N/A',
+                    wins: recordMatch ? parseInt(recordMatch[1]) : 0,
+                    losses: recordMatch ? parseInt(recordMatch[2]) : 0,
+                    otl: recordMatch ? parseInt(recordMatch[3]) : 0,
+                    confirmed: true
+                });
+            }
+        }
+        
+        return goalies;
     } catch (error) {
-        console.error('Error fetching goalie data:', error);
+        console.error('DailyFaceoff fetch error:', error);
         return [];
     }
 }
 
 function matchGoalie(goalies, teamAbbr, teamName) {
-    // Try to match by team abbreviation or name
+    const teamLower = teamName.toLowerCase();
+    
     for (const goalie of goalies) {
-        if (goalie.raw_text?.includes(teamAbbr) || goalie.raw_text?.includes(teamName)) {
+        const goalieTeam = goalie.team.toLowerCase();
+        if (goalieTeam.includes(teamLower) || teamLower.includes(goalieTeam)) {
             return goalie;
         }
     }
+    
     return null;
 }
 
@@ -39,10 +75,9 @@ module.exports = async (req, res) => {
     try {
         const today = new Date().toISOString().split('T')[0];
         
-        // Fetch both NHL schedule and goalie data in parallel
-        const [nhlData, goalies] = await Promise.all([
+        const [nhlData, confirmedStarters] = await Promise.all([
             fetch(`https://api-web.nhle.com/v1/schedule/${today}`),
-            getGoalieData()
+            getDailyFaceoffStarters()
         ]);
         
         const nhlJson = JSON.parse(nhlData);
@@ -55,25 +90,24 @@ module.exports = async (req, res) => {
                         const homeTeam = game.homeTeam.placeName.default + ' ' + game.homeTeam.commonName.default;
                         const awayTeam = game.awayTeam.placeName.default + ' ' + game.awayTeam.commonName.default;
                         
-                        // Match goalies from scraped data
-                        const homeGoalie = matchGoalie(goalies, game.homeTeam.abbrev, homeTeam) || {
+                        const homeGoalie = matchGoalie(confirmedStarters, game.homeTeam.abbrev, homeTeam) || {
                             name: "TBD",
-                            confirmed: false,
                             gaa: "-",
                             sv_pct: "-",
                             wins: 0,
                             losses: 0,
-                            otl: 0
+                            otl: 0,
+                            confirmed: false
                         };
                         
-                        const awayGoalie = matchGoalie(goalies, game.awayTeam.abbrev, awayTeam) || {
+                        const awayGoalie = matchGoalie(confirmedStarters, game.awayTeam.abbrev, awayTeam) || {
                             name: "TBD",
-                            confirmed: false,
                             gaa: "-",
                             sv_pct: "-",
                             wins: 0,
                             losses: 0,
-                            otl: 0
+                            otl: 0,
+                            confirmed: false
                         };
                         
                         games.push({
@@ -114,7 +148,7 @@ module.exports = async (req, res) => {
             timestamp: new Date().toISOString(),
             sources: {
                 nhl_api: true,
-                goaliepost_scraper: goalies.length > 0,
+                dailyfaceoff_starters: confirmedStarters.length > 0,
                 polymarket: false
             }
         });
@@ -128,4 +162,3 @@ module.exports = async (req, res) => {
         });
     }
 };
-
