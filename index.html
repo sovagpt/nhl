@@ -3,542 +3,457 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puck Prophet - NHL Betting Intelligence</title>
+    <title>🏒 Puck Prophet - NHL Goalie Intelligence</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&display=swap');
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            font-family: 'Fira Code', monospace;
+            background: #000;
             color: #fff;
-            min-height: 100vh;
             padding: 20px;
         }
-
+        
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
-
-        header {
-            text-align: center;
-            padding: 40px 0;
-            border-bottom: 2px solid rgba(255,255,255,0.1);
-            margin-bottom: 40px;
+        
+        .header {
+            border: 2px solid #00ff41;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
         }
-
+        
         h1 {
-            font-size: 3em;
-            background: linear-gradient(135deg, #00d4ff 0%, #7a5cff 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #00ff41;
+            font-size: 48px;
+            text-shadow: 0 0 10px #00ff41;
             margin-bottom: 10px;
-            font-weight: 900;
         }
-
-        .tagline {
-            font-size: 1.2em;
-            color: #8b94a8;
+        
+        .subtitle {
+            color: #999;
+            font-size: 16px;
         }
-
-        .stats-bar {
+        
+        .refresh-btn {
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            margin-top: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Fira Code', monospace;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .refresh-btn:hover {
+            background: #00dd35;
+        }
+        
+        .refresh-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .edges-section {
+            border: 2px solid #00ff41;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+        
+        .edges-title {
+            color: #00ff41;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .edge-card {
+            background: #111;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #00ff41;
+            border-radius: 5px;
+        }
+        
+        .edge-header {
             display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin: 30px 0;
-            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 10px;
         }
-
-        .stat {
-            background: rgba(255,255,255,0.05);
-            padding: 15px 30px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
+        
+        .edge-game {
+            font-size: 20px;
+            font-weight: bold;
         }
-
-        .stat-value {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: #00d4ff;
+        
+        .edge-bet {
+            color: #00ff41;
+            font-size: 14px;
         }
-
-        .stat-label {
-            font-size: 0.9em;
-            color: #8b94a8;
-            margin-top: 5px;
+        
+        .edge-confidence {
+            color: #00ff41;
+            font-weight: bold;
         }
-
+        
+        .edge-reason {
+            color: #999;
+            font-size: 14px;
+        }
+        
         .games-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
             gap: 20px;
-            margin-bottom: 40px;
         }
-
+        
         .game-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 24px;
-            transition: all 0.3s ease;
+            border: 2px solid #00ff41;
+            padding: 25px;
+            border-radius: 10px;
+            background: #111;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
         }
-
-        .game-card:hover {
-            transform: translateY(-4px);
-            border-color: #00d4ff;
-            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
+        
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
         }
-
-        .game-status {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-            margin-bottom: 12px;
+        
+        .game-matchup {
+            font-size: 24px;
+            font-weight: bold;
         }
-
-        .status-live {
-            background: #ff3b3b;
-            animation: pulse 2s infinite;
+        
+        .game-time {
+            color: #999;
+            font-size: 14px;
+            margin-top: 5px;
         }
-
-        .status-scheduled {
-            background: rgba(255,255,255,0.2);
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-
-        .teams {
-            margin: 20px 0;
-        }
-
-        .team {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .team:last-child {
-            border-bottom: none;
-        }
-
-        .team-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .team-logo {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-            border-radius: 8px;
-        }
-
-        .team-name {
-            font-size: 1.3em;
-            font-weight: 700;
-        }
-
-        .team-prob {
-            font-size: 1.5em;
-            font-weight: 800;
-            color: #00d4ff;
-        }
-
-        .goalie-info {
+        
+        .goalie-section {
             display: flex;
             gap: 20px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            margin-top: 16px;
+            padding: 20px 0;
+            border-bottom: 1px solid #333;
         }
-
-        .goalie {
-            flex: 1;
+        
+        .goalie-section:last-child {
+            border-bottom: none;
         }
-
-        .goalie-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
+        
+        .goalie-img {
+            position: relative;
+            flex-shrink: 0;
         }
-
-        .goalie-photo {
-            width: 60px;
-            height: 60px;
+        
+        .goalie-headshot {
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #00d4ff;
         }
-
-        .goalie-name {
-            font-weight: 700;
-            color: #00d4ff;
+        
+        .team-logo {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            width: 30px;
+            height: 30px;
+            background: #000;
+            border-radius: 50%;
+            padding: 2px;
+        }
+        
+        .goalie-info {
             flex: 1;
         }
-
-        .confirmed-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            background: rgba(0, 255, 136, 0.2);
-            color: #00ff88;
-            border-radius: 4px;
-            font-size: 0.7em;
-            font-weight: 600;
-            margin-left: 6px;
+        
+        .goalie-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
-
+        
+        .goalie-team {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .status-confirmed {
+            background: #16a34a;
+        }
+        
+        .status-probable {
+            background: #ca8a04;
+        }
+        
         .goalie-stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            font-size: 0.85em;
-            color: #8b94a8;
+            gap: 10px;
+            font-size: 14px;
         }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
+        
+        .stat-label {
+            color: #666;
+            font-size: 12px;
         }
-
-        .stat-item-label {
-            font-size: 0.8em;
-            opacity: 0.6;
+        
+        .stat-value {
+            font-weight: bold;
         }
-
-        .stat-item-value {
-            font-weight: 700;
-            color: #fff;
+        
+        .stat-value.highlight {
+            color: #00ff41;
         }
-
-        .edge-indicator {
-            margin-top: 16px;
-            padding: 12px;
-            border-radius: 8px;
-        }
-
-        .edge-indicator.positive {
-            background: rgba(0, 255, 136, 0.1);
-            border-left: 4px solid #00ff88;
-        }
-
-        .edge-indicator.negative {
-            background: rgba(255, 59, 59, 0.1);
-            border-left: 4px solid #ff3b3b;
-        }
-
-        .edge-recommendation {
-            font-weight: 700;
-            font-size: 1.1em;
-            margin-bottom: 4px;
-        }
-
-        .terminal {
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 12px;
-            padding: 20px;
-            font-family: 'Courier New', monospace;
-            margin-top: 40px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .terminal-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 16px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #30363d;
-        }
-
-        .terminal-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .dot-red { background: #ff5f56; }
-        .dot-yellow { background: #ffbd2e; }
-        .dot-green { background: #27c93f; }
-
-        .terminal-title {
-            color: #8b949e;
-            font-size: 0.9em;
-        }
-
-        .terminal-line {
-            line-height: 1.6;
-            font-size: 0.95em;
-        }
-
-        .terminal-line.success { color: #3fb950; }
-        .terminal-line.warning { color: #d29922; }
-        .terminal-line.error { color: #f85149; }
-
-        .timestamp {
-            color: #8b949e;
-            margin-right: 8px;
-        }
-
+        
         .loading {
             text-align: center;
-            padding: 40px;
+            padding: 100px 20px;
         }
-
-        .spinner {
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top-color: #00d4ff;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+        
+        .loading-icon {
+            font-size: 60px;
+            animation: pulse 1.5s infinite;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
-
-        .score {
-            font-size: 1.8em;
-            font-weight: 800;
-            color: #00d4ff;
-            margin: 10px 0;
+        
+        .loading-text {
+            color: #00ff41;
+            font-size: 20px;
+            margin-top: 20px;
+            text-shadow: 0 0 10px #00ff41;
         }
-
+        
+        .error {
+            border: 2px solid #ff0000;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+        }
+        
+        .error-text {
+            color: #ff0000;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #666;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        
         @media (max-width: 768px) {
             .games-grid {
                 grid-template-columns: 1fr;
             }
+            
             h1 {
-                font-size: 2em;
-            }
-            .goalie-info {
-                flex-direction: column;
+                font-size: 32px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>⚡ PUCK PROPHET</h1>
-            <p class="tagline">AI-Powered NHL Betting Intelligence</p>
-            
-            <div class="stats-bar">
-                <div class="stat">
-                    <div class="stat-value" id="total-games">-</div>
-                    <div class="stat-label">Games Today</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value" id="live-games">-</div>
-                    <div class="stat-label">Live Now</div>
-                </div>
-                <div class="stat">
-                    <div class="stat-value" id="edge-opportunities">-</div>
-                    <div class="stat-label">+EV Opportunities</div>
-                </div>
-            </div>
-        </header>
-
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>Loading game data...</p>
+        <!-- Header -->
+        <div class="header">
+            <h1>🏒 PUCK PROPHET</h1>
+            <p class="subtitle">NHL Starting Goalies & Betting Intelligence</p>
+            <p class="subtitle" id="last-update"></p>
+            <button class="refresh-btn" onclick="loadData()">🔄 Refresh Data</button>
         </div>
-
-        <div id="games-container" class="games-grid" style="display: none;"></div>
-
-        <div class="terminal">
-            <div class="terminal-header">
-                <div class="terminal-dot dot-red"></div>
-                <div class="terminal-dot dot-yellow"></div>
-                <div class="terminal-dot dot-green"></div>
-                <div class="terminal-title">puck-prophet-terminal</div>
+        
+        <!-- Main Content -->
+        <div id="app">
+            <div class="loading">
+                <div class="loading-icon">🏒</div>
+                <div class="loading-text">Loading Puck Prophet...</div>
             </div>
-            <div id="terminal-output"></div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>Data from GoaliePost API | Built by @duragification</p>
         </div>
     </div>
 
     <script>
-        function getTimestamp() {
-            return new Date().toTimeString().split(' ')[0];
-        }
-
-        function addTerminalLine(message, type = 'info') {
-            const terminal = document.getElementById('terminal-output');
-            const line = document.createElement('div');
-            line.className = `terminal-line ${type}`;
-            line.innerHTML = `<span class="timestamp">[${getTimestamp()}]</span>${message}`;
-            terminal.appendChild(line);
-            terminal.scrollTop = terminal.scrollHeight;
-        }
-
-        function createGameCard(game) {
-            const hasEdge = game.edge && game.edge.recommendation;
-            const edgeClass = hasEdge && game.edge.recommendation.includes('BET') ? 'positive' : 'negative';
+        // Change this to your GitHub username
+        const GITHUB_USER = 'sovagpt';
+        const REPO_NAME = 'puck-prophet';
+        const API_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO_NAME}/main/data.json`;
+        
+        async function loadData() {
+            const app = document.getElementById('app');
+            const btn = document.querySelector('.refresh-btn');
             
-            return `
-                <div class="game-card">
-                    <div class="game-status ${game.status === 'live' ? 'status-live' : 'status-scheduled'}">
-                        ${game.status === 'live' ? '🔴 LIVE' : '📅 ' + (game.game_time || 'SCHEDULED')}
-                    </div>
-                    
-                    ${game.score ? `<div class="score">${game.score}</div>` : ''}
-                    
-                    <div class="teams">
-                        <div class="team">
-                            <div class="team-header">
-                                ${game.team_logos?.away ? `<img src="${game.team_logos.away}" class="team-logo" alt="${game.away_team} logo">` : ''}
-                                <span class="team-name">${game.away_team}</span>
-                            </div>
-                            <span class="team-prob">${game.away_win_prob || '-'}%</span>
-                        </div>
-                        <div class="team">
-                            <div class="team-header">
-                                ${game.team_logos?.home ? `<img src="${game.team_logos.home}" class="team-logo" alt="${game.home_team} logo">` : ''}
-                                <span class="team-name">${game.home_team}</span>
-                            </div>
-                            <span class="team-prob">${game.home_win_prob || '-'}%</span>
-                        </div>
-                    </div>
-
-                    ${game.goalies ? `
-                        <div class="goalie-info">
-                            <div class="goalie">
-                                <div class="goalie-header">
-                                    ${game.goalies.away?.photo ? 
-                                        `<img src="${game.goalies.away.photo}" class="goalie-photo" alt="${game.goalies.away.name}">` : 
-                                        `<div class="goalie-photo" style="background: linear-gradient(135deg, #00d4ff 0%, #7a5cff 100%);"></div>`}
-                                    <div>
-                                        <div class="goalie-name">
-                                            🥅 ${game.goalies.away?.name || 'TBD'}
-                                            ${game.goalies.away?.confirmed ? '<span class="confirmed-badge">✓ CONFIRMED</span>' : ''}
-                                        </div>
-                                    </div>
-                                </div>
-                                ${game.goalies.away && game.goalies.away.name !== 'TBD' ? `
-                                    <div class="goalie-stats">
-                                        <div class="stat-item">
-                                            <span class="stat-item-label">GAA</span>
-                                            <span class="stat-item-value">${game.goalies.away.gaa || '-'}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-item-label">SV%</span>
-                                            <span class="stat-item-value">${game.goalies.away.sv_pct || '-'}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-item-label">Record</span>
-                                            <span class="stat-item-value">${game.goalies.away.wins || 0}-${game.goalies.away.losses || 0}-${game.goalies.away.otl || 0}</span>
-                                        </div>
-                                    </div>
-                                ` : ''}
-                            </div>
-                            <div class="goalie">
-                                <div class="goalie-header">
-                                    ${game.goalies.home?.photo ? 
-                                        `<img src="${game.goalies.home.photo}" class="goalie-photo" alt="${game.goalies.home.name}">` : 
-                                        `<div class="goalie-photo" style="background: linear-gradient(135deg, #7a5cff 0%, #00d4ff 100%);"></div>`}
-                                    <div>
-                                        <div class="goalie-name">
-                                            🥅 ${game.goalies.home?.name || 'TBD'}
-                                            ${game.goalies.home?.confirmed ? '<span class="confirmed-badge">✓ CONFIRMED</span>' : ''}
-                                        </div>
-                                    </div>
-                                </div>
-                                ${game.goalies.home && game.goalies.home.name !== 'TBD' ? `
-                                    <div class="goalie-stats">
-                                        <div class="stat-item">
-                                            <span class="stat-item-label">GAA</span>
-                                            <span class="stat-item-value">${game.goalies.home.gaa || '-'}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-item-label">SV%</span>
-                                            <span class="stat-item-value">${game.goalies.home.sv_pct || '-'}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-item-label">Record</span>
-                                            <span class="stat-item-value">${game.goalies.home.wins || 0}-${game.goalies.home.losses || 0}-${game.goalies.home.otl || 0}</span>
-                                        </div>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    ${hasEdge ? `
-                        <div class="edge-indicator ${edgeClass}">
-                            <div class="edge-recommendation">💡 ${game.edge.recommendation}</div>
-                            <div style="font-size: 0.85em; opacity: 0.8;">
-                                Confidence: ${game.edge.confidence} | Edge: ${Math.abs(game.edge.value || 0).toFixed(1)}%
-                            </div>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        async function loadGames() {
             try {
-                addTerminalLine('Fetching game data from API...', 'info');
+                btn.disabled = true;
+                btn.textContent = '⏳ Loading...';
                 
-                const response = await fetch('/api/games');
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('Failed to fetch data');
+                
                 const data = await response.json();
                 
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to fetch games');
-                }
+                // Update last update time
+                document.getElementById('last-update').textContent = 
+                    `Last updated: ${new Date(data.timestamp).toLocaleString()}`;
                 
-                addTerminalLine('✓ Data loaded successfully', 'success');
-                
-                const gamesContainer = document.getElementById('games-container');
-                const loading = document.getElementById('loading');
-                
-                if (data.games && data.games.length > 0) {
-                    gamesContainer.innerHTML = data.games.map(createGameCard).join('');
-                    
-                    document.getElementById('total-games').textContent = data.games.length;
-                    document.getElementById('live-games').textContent = 
-                        data.games.filter(g => g.status === 'live').length;
-                    document.getElementById('edge-opportunities').textContent = 
-                        data.games.filter(g => g.edge && g.edge.recommendation).length;
-                    
-                    loading.style.display = 'none';
-                    gamesContainer.style.display = 'grid';
-                    
-                    data.games.forEach(game => {
-                        if (game.edge && game.edge.recommendation) {
-                            addTerminalLine(`${game.away_team} @ ${game.home_team}: ${game.edge.recommendation}`, 'warning');
-                        }
-                    });
-                } else {
-                    loading.innerHTML = '<p>No NHL games scheduled today</p>';
-                    addTerminalLine('No games found', 'warning');
-                }
+                // Render content
+                app.innerHTML = renderContent(data);
                 
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('loading').innerHTML = `<p>Error loading data: ${error.message}</p>`;
-                addTerminalLine(`Error: ${error.message}`, 'error');
+                app.innerHTML = `
+                    <div class="error">
+                        <div class="error-text">❌ Failed to load data</div>
+                        <button class="refresh-btn" onclick="loadData()">Retry</button>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 Refresh Data';
             }
         }
-
-        loadGames();
-        setInterval(loadGames, 60000); // Refresh every minute
+        
+        function renderContent(data) {
+            let html = '';
+            
+            // Betting Edges
+            if (data.bettingEdges && data.bettingEdges.length > 0) {
+                html += `
+                    <div class="edges-section">
+                        <h2 class="edges-title">💰 BETTING EDGES (${data.bettingEdges.length})</h2>
+                        ${data.bettingEdges.slice(0, 5).map(edge => `
+                            <div class="edge-card">
+                                <div class="edge-header">
+                                    <div>
+                                        <div class="edge-game">${edge.game}</div>
+                                        <div class="edge-bet">BET: ${edge.betType}</div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="color: #999; font-size: 12px;">${edge.edge} EDGE</div>
+                                        <div class="edge-confidence">${edge.confidence}/10</div>
+                                    </div>
+                                </div>
+                                <div class="edge-reason">${edge.reason}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            // Games
+            if (data.games && data.games.length > 0) {
+                html += `
+                    <h2 style="color: #00ff41; margin-bottom: 20px;">
+                        TODAY'S STARTERS (${data.games.length} GAMES)
+                    </h2>
+                    <div class="games-grid">
+                        ${data.games.map(game => renderGame(game)).join('')}
+                    </div>
+                `;
+            } else {
+                html += '<div style="text-align: center; padding: 50px; color: #999;">No games today</div>';
+            }
+            
+            return html;
+        }
+        
+        function renderGame(game) {
+            return `
+                <div class="game-card">
+                    <div class="game-header">
+                        <div class="game-matchup">${game.away.teamAbbrev} @ ${game.home.teamAbbrev}</div>
+                        <div class="game-time">${game.gameTime}</div>
+                        <div class="game-time" style="font-size: 12px;">${game.venue}</div>
+                    </div>
+                    
+                    ${game.away.goalie ? renderGoalie(game.away.goalie, game.away) : ''}
+                    ${game.home.goalie ? renderGoalie(game.home.goalie, game.home) : ''}
+                </div>
+            `;
+        }
+        
+        function renderGoalie(goalie, team) {
+            return `
+                <div class="goalie-section">
+                    <div class="goalie-img">
+                        <img src="${goalie.headshot}" 
+                             alt="${goalie.name}"
+                             class="goalie-headshot"
+                             onerror="this.src='https://via.placeholder.com/80'">
+                        <img src="${team.teamLogo}" 
+                             alt="${team.teamAbbrev}"
+                             class="team-logo"
+                             onerror="this.src='https://via.placeholder.com/30'">
+                    </div>
+                    <div class="goalie-info">
+                        <div class="goalie-name">${goalie.name}</div>
+                        <div class="goalie-team">${team.team} #${goalie.number}</div>
+                        <div class="status-badge ${goalie.confirmed ? 'status-confirmed' : 'status-probable'}">
+                            ${goalie.confirmed ? '✅ CONFIRMED' : '⚠️ PROBABLE'}
+                        </div>
+                        <div class="goalie-stats">
+                            <div>
+                                <div class="stat-label">Record</div>
+                                <div class="stat-value">${goalie.stats.record}</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">GAA</div>
+                                <div class="stat-value">${goalie.stats.gaa?.toFixed(2) || 'N/A'}</div>
+                            </div>
+                            <div>
+                                <div class="stat-label">SV%</div>
+                                <div class="stat-value highlight">${goalie.stats.savePct?.toFixed(3) || 'N/A'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Load data on page load
+        loadData();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(loadData, 5 * 60 * 1000);
     </script>
 </body>
 </html>
