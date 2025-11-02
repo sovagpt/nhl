@@ -2,9 +2,7 @@ name: Update Goalie Data
 
 on:
   schedule:
-    # Run every 5 minutes during game hours (12pm-1am ET = 4pm-5am UTC)
-    - cron: '*/5 16-23 * * *'
-    - cron: '*/5 0-5 * * *'
+    - cron: '*/5 * * * *'  # Every 5 minutes, 24/7
   workflow_dispatch: # Allow manual trigger
 
 jobs:
