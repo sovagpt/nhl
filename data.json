@@ -1,5 +1,41 @@
 {
-  "timestamp": "2025-11-02T03:43:24.683569",
-  "games": [],
+  "timestamp": "2025-11-02T03:57:31.430982",
+  "games": [
+    {
+      "gameId": "unknown",
+      "gameDate": "2025-11-02",
+      "gameTime": "TBD",
+      "venue": "Unknown",
+      "status": "Scheduled",
+      "away": {
+        "team": "Test Team",
+        "teamAbbrev": "TEST",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/placeholder.png",
+        "goalie": {
+          "name": "TBD",
+          "confirmed": false,
+          "stats": {
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0
+          }
+        }
+      },
+      "home": {
+        "team": "Data Team",
+        "teamAbbrev": "DATA",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/placeholder.png",
+        "goalie": {
+          "name": "TBD",
+          "confirmed": false,
+          "stats": {
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0
+          }
+        }
+      }
+    }
+  ],
   "bettingEdges": []
 }
