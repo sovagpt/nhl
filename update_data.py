@@ -1,91 +1,97 @@
 #!/usr/bin/env python3
 import requests
-from bs4 import BeautifulSoup
 import json
 from datetime import datetime
-import re
 
 CDN_BASE = 'https://public-ds.static.dobbersports.com'
 
+def parse_goalie(goalie_data):
+    if not goalie_data or not isinstance(goalie_data, list) or len(goalie_data) == 0:
+        return None
+    
+    goalie = goalie_data[0]
+    goalie_id = goalie.get('id', '')
+    
+    return {
+        'id': goalie_id,
+        'name': goalie.get('firstName', '') + ' ' + goalie.get('lastName', ''),
+        'number': 0,
+        'confirmed': True,
+        'status': 'Confirmed',
+        'headshot': f"{CDN_BASE}/player-headshots/{goalie_id}.png",
+        'stats': {
+            'wins': 0,
+            'losses': 0,
+            'otl': 0,
+            'record': '0-0-0',
+            'gaa': 0,
+            'savePct': 0,
+            'shutouts': 0,
+        }
+    }
+
 def main():
     try:
-        print("Scraping GoaliePost.com directly...")
+        print("Fetching games from weekly schedule...")
         
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
+            'User-Agent': 'Mozilla/5.0',
+            'Accept': 'application/json'
         }
         
-        response = requests.get('https://goaliepost.com/', headers=headers, timeout=30)
-        response.raise_for_status()
-        
-        # Parse HTML
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Look for script tags with JSON data
-        scripts = soup.find_all('script')
-        games_data = []
-        
-        for script in scripts:
-            if script.string and 'game' in script.string.lower():
-                # Try to extract JSON from script tags
-                try:
-                    # Look for JSON objects in script
-                    matches = re.findall(r'\{[^{}]*"game"[^{}]*\}', script.string)
-                    for match in matches:
-                        try:
-                            data = json.loads(match)
-                            games_data.append(data)
-                        except:
-                            pass
-                except:
-                    pass
-        
-        print(f"Found {len(games_data)} potential games from scripts")
-        
-        # If no data found in scripts, create dummy data to test the frontend
-        if len(games_data) == 0:
-            print("No games found in HTML, creating test data...")
-            games_data = [{
-                'away': {'teamAbbrev': 'TEST', 'team': 'Test Team'},
-                'home': {'teamAbbrev': 'DATA', 'team': 'Data Team'}
-            }]
-        
-        # Format the data
-        games = []
-        for game in games_data[:10]:  # Limit to 10 games
+        # Try multiple weeks
+        all_games = []
+        for week in range(1, 4):
             try:
+                response = requests.get(
+                    f'https://core.api.dobbersports.com/v1/weekly-schedule/weekly-games?week={week}',
+                    headers=headers,
+                    timeout=30
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    weekly_games = data.get('data', {}).get('content', {}).get('weeklyGames', [])
+                    all_games.extend(weekly_games)
+                    print(f"Week {week}: Found {len(weekly_games)} games")
+            except:
+                pass
+        
+        print(f"Total games found: {len(all_games)}")
+        
+        games = []
+        for game in all_games[:20]:  # Limit to 20 games
+            if not isinstance(game, dict):
+                continue
+            
+            try:
+                team_info = game.get('team', {})
+                opponent_team = game.get('opponentTeam', {})
+                
                 games.append({
-                    'gameId': game.get('id', 'unknown'),
-                    'gameDate': game.get('gameDate', datetime.now().strftime('%Y-%m-%d')),
-                    'gameTime': game.get('gameTime', 'TBD'),
-                    'venue': game.get('venue', 'Unknown'),
+                    'gameId': game.get('gameId', ''),
+                    'gameDate': game.get('epochDate', ''),
+                    'gameTime': 'TBD',
+                    'venue': '',
                     'status': 'Scheduled',
                     'away': {
-                        'team': game.get('away', {}).get('team', 'Unknown'),
-                        'teamAbbrev': game.get('away', {}).get('teamAbbrev', 'UNK'),
-                        'teamLogo': f"{CDN_BASE}/team-logo/dark/placeholder.png",
-                        'goalie': {
-                            'name': game.get('away', {}).get('goalie', {}).get('name', 'TBD'),
-                            'confirmed': False,
-                            'stats': {'record': '0-0-0', 'gaa': 0, 'savePct': 0}
-                        }
+                        'team': opponent_team.get('name', ''),
+                        'teamAbbrev': opponent_team.get('abbreviation', ''),
+                        'teamLogo': f"{CDN_BASE}/team-logo/dark/{opponent_team.get('id', '')}.png",
+                        'goalie': parse_goalie(game.get('goalies', []))
                     },
                     'home': {
-                        'team': game.get('home', {}).get('team', 'Unknown'),
-                        'teamAbbrev': game.get('home', {}).get('teamAbbrev', 'UNK'),
-                        'teamLogo': f"{CDN_BASE}/team-logo/dark/placeholder.png",
-                        'goalie': {
-                            'name': game.get('home', {}).get('goalie', {}).get('name', 'TBD'),
-                            'confirmed': False,
-                            'stats': {'record': '0-0-0', 'gaa': 0, 'savePct': 0}
-                        }
+                        'team': team_info.get('name', ''),
+                        'teamAbbrev': team_info.get('abbreviation', ''),
+                        'teamLogo': f"{CDN_BASE}/team-logo/dark/{team_info.get('id', '')}.png",
+                        'goalie': None
                     }
                 })
             except Exception as e:
                 print(f"Error parsing game: {e}")
                 continue
+        
+        print(f"Parsed {len(games)} games")
         
         data = {
             'timestamp': datetime.utcnow().isoformat(),
@@ -96,7 +102,7 @@ def main():
         with open('data.json', 'w') as f:
             json.dump(data, f, indent=2)
         
-        print(f"✅ Scraped {len(games)} games!")
+        print("✅ Success!")
         
     except Exception as e:
         print(f"❌ Error: {e}")
