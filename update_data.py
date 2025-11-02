@@ -7,7 +7,7 @@ BASE_API = 'https://core.api.dobbersports.com/v1'
 CDN_BASE = 'https://public-ds.static.dobbersports.com'
 
 def parse_goalie(goalie_data):
-    if not goalie_data:
+    if not goalie_data or not isinstance(goalie_data, dict):
         return None
     
     goalie_id = goalie_data.get('id', '')
@@ -40,8 +40,8 @@ def calculate_betting_edges(games):
         if not away_goalie or not home_goalie:
             continue
         
-        away_sv = away_goalie.get('stats', {}).get('savePct', 0)
-        home_sv = home_goalie.get('stats', {}).get('savePct', 0)
+        away_sv = away_goalie.get('stats', {}).get('savePct', 0) or 0
+        home_sv = home_goalie.get('stats', {}).get('savePct', 0) or 0
         
         if away_sv > 0.920 and home_sv < 0.900:
             edges.append({
@@ -85,29 +85,48 @@ def main():
         response.raise_for_status()
         
         api_data = response.json()
-        print(f"Found {len(api_data)} games")
+        
+        # Handle if API returns dict instead of list
+        if isinstance(api_data, dict):
+            api_data = api_data.get('games', []) or api_data.get('data', []) or []
+        
+        if not isinstance(api_data, list):
+            api_data = []
+        
+        print(f"Found {len(api_data)} items")
         
         games = []
         for game in api_data:
-            games.append({
-                'gameId': game.get('id', ''),
-                'gameDate': game.get('gameDate', ''),
-                'gameTime': game.get('gameTime', ''),
-                'venue': game.get('venue', ''),
-                'status': game.get('status', ''),
-                'away': {
-                    'team': game.get('awayTeam', {}).get('name', ''),
-                    'teamAbbrev': game.get('awayTeam', {}).get('abbreviation', ''),
-                    'teamLogo': f"{CDN_BASE}/team-logo/dark/{game.get('awayTeam', {}).get('id', '')}.png",
-                    'goalie': parse_goalie(game.get('awayGoalie'))
-                },
-                'home': {
-                    'team': game.get('homeTeam', {}).get('name', ''),
-                    'teamAbbrev': game.get('homeTeam', {}).get('abbreviation', ''),
-                    'teamLogo': f"{CDN_BASE}/team-logo/dark/{game.get('homeTeam', {}).get('id', '')}.png",
-                    'goalie': parse_goalie(game.get('homeGoalie'))
-                }
-            })
+            # Skip if not a dict
+            if not isinstance(game, dict):
+                print(f"Skipping non-dict item: {type(game)}")
+                continue
+            
+            try:
+                games.append({
+                    'gameId': game.get('id', ''),
+                    'gameDate': game.get('gameDate', ''),
+                    'gameTime': game.get('gameTime', ''),
+                    'venue': game.get('venue', ''),
+                    'status': game.get('status', ''),
+                    'away': {
+                        'team': game.get('awayTeam', {}).get('name', '') if isinstance(game.get('awayTeam'), dict) else '',
+                        'teamAbbrev': game.get('awayTeam', {}).get('abbreviation', '') if isinstance(game.get('awayTeam'), dict) else '',
+                        'teamLogo': f"{CDN_BASE}/team-logo/dark/{game.get('awayTeam', {}).get('id', '')}.png" if isinstance(game.get('awayTeam'), dict) else '',
+                        'goalie': parse_goalie(game.get('awayGoalie'))
+                    },
+                    'home': {
+                        'team': game.get('homeTeam', {}).get('name', '') if isinstance(game.get('homeTeam'), dict) else '',
+                        'teamAbbrev': game.get('homeTeam', {}).get('abbreviation', '') if isinstance(game.get('homeTeam'), dict) else '',
+                        'teamLogo': f"{CDN_BASE}/team-logo/dark/{game.get('homeTeam', {}).get('id', '')}.png" if isinstance(game.get('homeTeam'), dict) else '',
+                        'goalie': parse_goalie(game.get('homeGoalie'))
+                    }
+                })
+            except Exception as e:
+                print(f"Error parsing game: {e}")
+                continue
+        
+        print(f"Parsed {len(games)} games")
         
         betting_edges = calculate_betting_edges(games)
         print(f"Found {len(betting_edges)} betting edges")
@@ -125,6 +144,8 @@ def main():
         
     except Exception as e:
         print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
         raise
 
 if __name__ == '__main__':
