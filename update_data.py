@@ -80,11 +80,20 @@ def main():
             'Accept': 'application/json'
         }
         
-        print("Fetching data...")
-        response = requests.get(f"{BASE_API}/feed/goalie-post-feed", headers=headers, timeout=30)
-        response.raise_for_status()
+        print("Fetching weekly schedule...")
         
-        api_data = response.json()
+        # Get current week
+        week_response = requests.get(f"{BASE_API}/weekly-schedule/weeks", headers=headers, timeout=30)
+        week_response.raise_for_status()
+        weeks = week_response.json()
+        
+        print(f"Found {len(weeks)} weeks")
+        
+        # Get current week games (week 0)
+        games_response = requests.get(f"{BASE_API}/weekly-schedule/weekly-games?week=0", headers=headers, timeout=30)
+        games_response.raise_for_status()
+        
+        api_data = games_response.json()
         
         # Handle if API returns dict instead of list
         if isinstance(api_data, dict):
@@ -93,7 +102,7 @@ def main():
         if not isinstance(api_data, list):
             api_data = []
         
-        print(f"Found {len(api_data)} items")
+        print(f"Found {len(api_data)} games this week")
         
         games = []
         for game in api_data:
