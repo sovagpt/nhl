@@ -80,35 +80,31 @@ def main():
             'Accept': 'application/json'
         }
         
-        print("Fetching weekly schedule...")
+        print("Fetching game data...")
         
-        # Get current week
-        week_response = requests.get(f"{BASE_API}/weekly-schedule/weeks", headers=headers, timeout=30)
-        week_response.raise_for_status()
-        weeks = week_response.json()
+        # Use the game search endpoint with larger page size
+        response = requests.get(
+            f"{BASE_API}/game/search",
+            params={'pageSize': 50},
+            headers=headers,
+            timeout=30
+        )
+        response.raise_for_status()
         
-        print(f"Found {len(weeks)} weeks")
+        api_data = response.json()
         
-        # Get current week games (week 0)
-        games_response = requests.get(f"{BASE_API}/weekly-schedule/weekly-games?week=0", headers=headers, timeout=30)
-        games_response.raise_for_status()
-        
-        api_data = games_response.json()
-        
-        # Handle if API returns dict instead of list
+        # Handle different response formats
         if isinstance(api_data, dict):
-            api_data = api_data.get('games', []) or api_data.get('data', []) or []
+            api_data = api_data.get('games', []) or api_data.get('data', []) or api_data.get('content', []) or []
         
         if not isinstance(api_data, list):
             api_data = []
         
-        print(f"Found {len(api_data)} games this week")
+        print(f"Found {len(api_data)} games")
         
         games = []
         for game in api_data:
-            # Skip if not a dict
             if not isinstance(game, dict):
-                print(f"Skipping non-dict item: {type(game)}")
                 continue
             
             try:
