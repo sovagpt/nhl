@@ -1,5 +1,706 @@
 {
-  "timestamp": "2025-11-06T14:55:52.144005",
-  "games": [],
+  "timestamp": "2025-11-06T15:15:53.330576",
+  "games": [
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d443f",
+          "name": "Ukko-Pekka Luukkonen",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d443f.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d446e",
+          "name": "Anton Forsberg",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d446e.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d4526",
+          "name": "Alex Nedeljkovic",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d4526.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d440f",
+          "name": "Casey DeSmith",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d440f.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d465f",
+          "name": "Connor Hellebuyck",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d465f.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d44f5",
+          "name": "Vitek Vanecek",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d44f5.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d462e",
+          "name": "Elvis Merzlikins",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d462e.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "6242f9fba2d7720910f0fbb7",
+          "name": "Filip Gustavsson",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/6242f9fba2d7720910f0fbb7.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d45d1",
+          "name": "John Gibson",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d45d1.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d4539",
+          "name": "Juuse Saros",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d4539.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d455a",
+          "name": "Charlie Lindgren",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d455a.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d44b2",
+          "name": "Spencer Knight",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d44b2.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d4426",
+          "name": "Jeremy Swayman",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d4426.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d4574",
+          "name": "Dan Vladar",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d4574.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d4406",
+          "name": "Tristan Jarry",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d4406.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d43b7",
+          "name": "Semyon Varlamov",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d43b7.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d43d3",
+          "name": "Igor Shesterkin",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d43d3.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d4487",
+          "name": "Petr Mrazek",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d4487.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d445b",
+          "name": "Sam Montembeault",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d445b.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    },
+    {
+      "gameId": "",
+      "gameDate": "",
+      "gameTime": "TBD",
+      "venue": "",
+      "status": "Scheduled",
+      "away": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": {
+          "id": "61c1caa38a12aa09df3d441b",
+          "name": "Linus Ullmark",
+          "number": 0,
+          "confirmed": true,
+          "status": "Confirmed",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d441b.png",
+          "stats": {
+            "wins": 0,
+            "losses": 0,
+            "otl": 0,
+            "record": "0-0-0",
+            "gaa": 0,
+            "savePct": 0,
+            "shutouts": 0
+          }
+        }
+      },
+      "home": {
+        "team": "",
+        "teamAbbrev": "",
+        "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
+        "goalie": null
+      }
+    }
+  ],
   "bettingEdges": []
 }
