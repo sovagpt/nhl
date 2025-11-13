@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-13T21:38:25.461793",
+  "timestamp": "2025-11-13T21:45:48.082385",
   "games": [
     {
       "gameId": "",
@@ -82,12 +82,12 @@
         "teamAbbrev": "",
         "teamLogo": "https://public-ds.static.dobbersports.com/team-logo/dark/.png",
         "goalie": {
-          "id": "61c1caa38a12aa09df3d4526",
-          "name": "Alex Nedeljkovic",
+          "id": "6286383cdcf126538a141869",
+          "name": "Jakub Skarek",
           "number": 0,
           "confirmed": true,
           "status": "Confirmed",
-          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/61c1caa38a12aa09df3d4526.png",
+          "headshot": "https://public-ds.static.dobbersports.com/player-headshots/6286383cdcf126538a141869.png",
           "stats": {
             "wins": 0,
             "losses": 0,
